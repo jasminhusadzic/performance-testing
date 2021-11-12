@@ -1,0 +1,30 @@
+name: Performance Tests
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+        
+    steps:
+    - uses: nanasess/setup-chromedriver@master
+      # with:
+      #  chromedriver-version: 77.0.3865.40
+    - run: |
+       export DISPLAY=:99
+       chromedriver --url-base=/wd/hub &
+       sudo Xvfb -ac :99 -screen 0 1920x1280x24 > /dev/null 2>&1 & # optional
+    
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install
+      run: npm install
+    - name: Run Performance tests
+      if: always()
+      run: npm run test:performance
+      
